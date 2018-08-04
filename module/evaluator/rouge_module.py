@@ -12,7 +12,10 @@ class RougeModule(BaseModule):
     def __init__(self, context: EvaluatorContext):
         self._context = context
         self.r = None
-        self.set_up()
+
+    def add_module_code(self, cluster: Cluster) -> Cluster:
+        cluster.append_code('rouge')
+        return cluster
 
     def set_up(self):
         rouge_dir = '/opt/ROUGE'
@@ -27,10 +30,12 @@ class RougeModule(BaseModule):
             self.r.model_filename_pattern = 'PROXY_[A-Z]{3}_ENG_#ID#'
             self.r.system_filename_pattern = 'PROXY_[A-Z]{3}_ENG_([0-9_]+).system'
 
-    def get_command(self) -> Callable:
-        return self._evaluate
+    def command(self, cluster):
+        cluster = super().command(cluster)
+        return self._evaluate(cluster)
 
     def _evaluate(self, cluster: Cluster)->Cluster:
+        cluster = self.add_module_code(cluster)
         rouge_output = self.r.convert_and_evaluate()
         result = self.r.output_to_dict(rouge_output)
         setattr(cluster, 'rouge', result)

@@ -12,7 +12,9 @@ class PrintSummaries(BaseModule):
     def __init__(self, context: UtilContext):
         self._context = context
         self.folder = ''
-        self.set_up()
+
+    def add_module_code(self, cluster: Cluster) -> Cluster:
+        return cluster
 
     def set_up(self):
         self.folder = os.path.join(self._context.output_path, self._context.category,
@@ -20,8 +22,9 @@ class PrintSummaries(BaseModule):
         if not os.path.isdir(self.folder):
             os.makedirs(self.folder)
 
-    def get_command(self) -> Callable:
-        return self._gen_summaries
+    def command(self, cluster):
+        cluster = super().command(cluster)
+        return self._gen_summaries(cluster)
 
     def _gen_summaries(self, cluster: Cluster)->Cluster:
         doc_id: int

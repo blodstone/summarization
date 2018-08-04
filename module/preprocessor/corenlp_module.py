@@ -12,13 +12,23 @@ class CoreNLPModule(BaseModule):
 
     def __init__(self, context: PreprocessorContext):
         self._context = context
-        self._nlp = CoreNLP(corenlp_path=self._context.corenlp_path).nlp
+        self._nlp = None
 
-    def get_command(self) -> Callable:
-        return self._annotate
+    def add_module_code(self, cluster: Cluster) -> Cluster:
+        if self._context.annotation == 'tokenize':
+            cluster.append_code('tokenize')
+        elif self._context.annotation == 'pos-tag':
+            cluster.append_code('pos-tag')
+        elif self._context.annotation == 'dependency':
+            cluster.append_code('dependency')
+        return cluster
+
+    def command(self, cluster):
+        cluster = super().command(cluster)
+        return self._annotate(cluster)
 
     def set_up(self):
-        pass
+        self._nlp = CoreNLP(corenlp_path=self._context.corenlp_path).nlp
 
     def _annotate(self, cluster: Cluster):
         doc_id: str

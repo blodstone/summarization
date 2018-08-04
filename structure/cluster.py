@@ -7,6 +7,10 @@ class Cluster(Mapping):
 
     def __init__(self):
         self._documents = dict()
+        self._module_codes = list()
+
+    def append_code(self, code: str):
+        self._module_codes.append(code)
 
     def __iter__(self) -> Iterator:
         return self._documents.__iter__()

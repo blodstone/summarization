@@ -11,11 +11,16 @@ class AMRReader(BaseReader, BaseModule):
     def __init__(self, context:ReaderContext):
         self._context = context
 
+    def add_module_code(self, cluster: Cluster) -> Cluster:
+        cluster.append_code('amr')
+        return cluster
+
     def set_up(self):
         pass
 
-    def get_command(self)->Callable:
-        return self._load_file
+    def command(self, cluster):
+        cluster = super().command(cluster)
+        return self._load_file(cluster)
 
     def _load_file(self, cluster: Cluster)->Cluster:
         snt_text = ''
