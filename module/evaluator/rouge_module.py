@@ -5,7 +5,6 @@ from module.base_module import BaseModule
 from module.context.evaluator_context import EvaluatorContext
 from module.reader.base_reader import BaseReader
 from structure.cluster import Cluster
-from structure.document import Document
 
 
 class RougeModule(BaseModule):

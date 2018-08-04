@@ -19,8 +19,10 @@ class AutoModuleGenerator:
         self._contexts['reader'] = ReaderContext(args)
         self._contexts['reader'].category = self._category
         self._contexts['reader'].parse_args()
-        self._contexts['preprocessor'] = PreprocessorContext(args)
-        self._contexts['preprocessor'].parse_args()
+        for annotation in ['pos-tag', 'dependency']:
+            self._contexts[annotation] = PreprocessorContext(args)
+            self._contexts[annotation].parse_args()
+            self._contexts[annotation].annotation = annotation
         self._contexts['summarizer'] = SummarizerContext(args)
         self._contexts['summarizer'].parse_args()
         self._contexts['util'] = UtilContext(args)
@@ -33,34 +35,43 @@ class AutoModuleGenerator:
     def gen_modules(self)->list:
         modules = list()
         reader = self._gen_reader()
-        modules.append(reader)
+        modules.extend(reader)
         preprocessors = self._gen_preprocessors()
-        modules.append(*preprocessors)
-        if self._category in ['dev', 'test']:
-            summarizer = self._gen_summarizer()
-            modules.append(summarizer)
-            print_gold_summary = self._gen_util('print_gold_summary')
-            modules.append(print_gold_summary)
-            print_summary = self._gen_util('print_summary')
-            modules.append(print_summary)
-            evaluators = self._gen_evaluators()
-            modules.append(*evaluators)
+        modules.extend(preprocessors)
+        # if self._category in ['dev', 'test']:
+        #     summarizer = self._gen_summarizer()
+        #     modules.extend(summarizer)
+        #     print_gold_summary = self._gen_util('print_gold_summary')
+        #     modules.extend(print_gold_summary)
+        #     print_summary = self._gen_util('print_summary')
+        #     modules.extend(print_summary)
+        #     evaluators = self._gen_evaluators()
+        #     modules.extend(*evaluators)
         return modules
 
-    def _gen_reader(self)->Union[BaseModule]:
-        return ModuleFactory.create_reader(self._contexts['reader'])
+    def _gen_reader(self)->list:
+        modules = list()
+        modules.append(ModuleFactory.create_reader(self._contexts['reader']))
+        return modules
 
     def _gen_preprocessors(self)->list:
-        self._contexts['preprocessor'].annotation = 'pos-tag'
-        pos_tagger = ModuleFactory.create_corenlp_preprocessor(self._contexts['preprocessor'])
-        return [pos_tagger]
+        modules = list()
+        for annotation in ['pos-tag', 'dependency']:
+            modules.append(ModuleFactory.create_corenlp_preprocessor(self._contexts[annotation]))
+        return modules
 
-    def _gen_summarizer(self)->BaseModule:
-        return ModuleFactory.create_summarizer(self._contexts['summarizer'])
+    def _gen_summarizer(self)->list:
+        modules = list()
+        modules.append(ModuleFactory.create_summarizer(self._contexts['summarizer']))
+        return modules
 
-    def _gen_util(self, service)->BaseModule:
+    def _gen_util(self, service)->list:
+        modules = list()
         self._contexts['util'].service = service
-        return ModuleFactory.create_util(self._contexts['util'])
+        modules.append(ModuleFactory.create_util(self._contexts['util']))
+        return modules
 
     def _gen_evaluators(self)->list:
-        return ModuleFactory.create_evaluators(self._contexts['evaluator'])
+        modules = list()
+        modules.append(ModuleFactory.create_evaluators(self._contexts['evaluator']))
+        return modules

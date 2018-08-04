@@ -7,9 +7,10 @@ from structure.sentence import Sentence
 from structure.token import Token
 from library.corenlp import CoreNLP
 
+
 class CoreNLPModule(BaseModule):
 
-    def __init__(self, context:PreprocessorContext):
+    def __init__(self, context: PreprocessorContext):
         self._context = context
         self._nlp = CoreNLP(corenlp_path=self._context.corenlp_path).nlp
 
@@ -24,14 +25,16 @@ class CoreNLPModule(BaseModule):
         doc: Document
         for doc_id, doc in cluster.items():
             sent: Sentence
-            for sent in [*doc.bodies, *[sent for ex in doc.gold_summaries for sent in ex.sentences]]:
+            for sent in doc.bodies:
                 if self._context.annotation == 'tokenize':
                     self._tokenize(sent)
                 elif self._context.annotation == 'pos-tag':
                     self._pos_tag(sent)
+                elif self._context.annotation == 'dependency':
+                    self._parse_dep(sent)
         return cluster
 
-    def _tokenize(self, sent):
+    def _tokenize(self, sent: Sentence):
         tokens = self._nlp.word_tokenize(sent.text)
         sent.tokens = list()
         for t in tokens:
@@ -40,8 +43,7 @@ class CoreNLPModule(BaseModule):
             token.pos = len(sent.tokens)
             sent.tokens.append(token)
 
-
-    def _pos_tag(self, sent):
+    def _pos_tag(self, sent: Sentence):
         tokens = self._nlp.pos_tag(sent.text)
         sent.tokens = list()
         for t in tokens:
@@ -50,3 +52,7 @@ class CoreNLPModule(BaseModule):
             token.pos = len(sent.tokens)
             setattr(token, 'POStag', t[1])
             sent.tokens.append(token)
+
+    def _parse_dep(self, sent: Sentence):
+        dep_arcs = [(arc[0], arc[1]-1, arc[2]-1) for arc in self._nlp.dependency_parse(sent.text)]
+        setattr(sent, 'dep_arcs', dep_arcs)

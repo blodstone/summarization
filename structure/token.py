@@ -1,5 +1,6 @@
 import uuid
 
+
 class Token:
 
     def __init__(self):
