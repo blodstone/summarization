@@ -25,9 +25,10 @@ class AutoModuleGenerator:
             self._contexts[annotation].annotation = annotation
         self._contexts['summarizer'] = SummarizerContext(args)
         self._contexts['summarizer'].parse_args()
-        self._contexts['util'] = UtilContext(args)
-        self._contexts['util'].category = self._category
-        self._contexts['util'].parse_args()
+        for service in ['print_summary', 'print_gold_summary', 'save_cluster']:
+            self._contexts[service] = UtilContext(args)
+            self._contexts[service].category = self._category
+            self._contexts[service].parse_args()
         self._contexts['evaluator'] = EvaluatorContext(args)
         self._contexts['evaluator'].category = self._category
         self._contexts['evaluator'].parse_args()
@@ -43,8 +44,6 @@ class AutoModuleGenerator:
         #     modules.extend(summarizer)
         #     print_gold_summary = self._gen_util('print_gold_summary')
         #     modules.extend(print_gold_summary)
-        #     print_summary = self._gen_util('print_summary')
-        #     modules.extend(print_summary)
         #     evaluators = self._gen_evaluators()
         #     modules.extend(*evaluators)
         return modules
@@ -56,19 +55,22 @@ class AutoModuleGenerator:
 
     def _gen_preprocessors(self)->list:
         modules = list()
+        # TODO: something is wrong here, not a pure modularity
         for annotation in ['pos-tag', 'dependency']:
             modules.append(ModuleFactory.create_corenlp_preprocessor(self._contexts[annotation]))
+        modules.extend(self._gen_util('save_cluster'))
         return modules
 
     def _gen_summarizer(self)->list:
         modules = list()
         modules.append(ModuleFactory.create_summarizer(self._contexts['summarizer']))
+        modules.extend(self._gen_util('print_summary'))
         return modules
 
     def _gen_util(self, service)->list:
         modules = list()
-        self._contexts['util'].service = service
-        modules.append(ModuleFactory.create_util(self._contexts['util']))
+        self._contexts[service].service = service
+        modules.append(ModuleFactory.create_util(self._contexts[service]))
         return modules
 
     def _gen_evaluators(self)->list:

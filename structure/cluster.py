@@ -9,6 +9,10 @@ class Cluster(Mapping):
         self._documents = dict()
         self._module_codes = list()
 
+    @property
+    def module_codes(self):
+        return self._module_codes
+
     def append_code(self, code: str):
         self._module_codes.append(code)
 

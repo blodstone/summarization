@@ -1,3 +1,4 @@
+from library.corenlp import CoreNLP
 from module.base_module import BaseModule
 from structure.cluster import Cluster
 
@@ -12,4 +13,5 @@ class Application:
         for module in modules:
             command = module.get_command()
             cluster = command(cluster)
+        CoreNLP().close()
         print()

@@ -12,6 +12,7 @@ from module.context.summarizer_context import SummarizerContext
 from module.summarizer.lead_line_module import LeadLineModule
 from module.util.print_gold_summaries import PrintGoldSummaries
 from module.util.print_summaries import PrintSummaries
+from module.util.save_cluster import SaveCluster
 
 
 class ModuleFactory:
@@ -41,6 +42,8 @@ class ModuleFactory:
             return PrintSummaries(context)
         elif context.service == 'print_gold_summary':
             return PrintGoldSummaries(context)
+        elif context.service == 'save_cluster':
+            return SaveCluster(context)
         raise Exception('Service not valid for util.')
 
     @staticmethod
